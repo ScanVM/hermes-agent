@@ -194,6 +194,11 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
 
+      - uses: ./.github/actions/fetch-upstream-release-tags
+        with:
+          install-ref: ${{ inputs.install-ref }}
+          update-ref: ${{ inputs.update-ref }}
+
       # Old installers refresh PATH after winget installs ripgrep, dropping the
       # process-only uv path. Supply the tool before running those shipped scripts.
       - name: Set up driver tools only
