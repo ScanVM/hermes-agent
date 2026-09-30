@@ -173,18 +173,21 @@ jobs:
     outputs:
       tags: ${{ steps.pick.outputs.tags }}
     steps:
-      # This job only reads tag names and trees, so take the cheap
-      # checkout: no blobs (filter), no other files (sparse), but DO fetch
-      # tags -- they are the whole input, and the default shallow checkout
-      # has none.
+      # This job only reads tag names and trees, so take the cheap checkout:
+      # no blobs (filter), only the picker files (sparse), and fork-local tags.
+      # The next step also fetches the canonical release refs for a fork.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           filter: blob:none
           fetch-tags: true
           sparse-checkout: |
+            .github/actions/fetch-upstream-release-tags/action.yml
             scripts/sandbox/pick-release-tags.sh
             scripts/releases/pick_tags.py
           sparse-checkout-cone-mode: false
+      - uses: ./.github/actions/fetch-upstream-release-tags
+        with:
+          fetch-all: true
       - id: pick
         env:
           # Inputs never touch shell syntax directly: TAG_COUNT arrives via

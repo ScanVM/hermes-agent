@@ -114,6 +114,11 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
 
+      - uses: ./.github/actions/fetch-upstream-release-tags
+        with:
+          install-ref: ${{ inputs.install-ref }}
+          update-ref: ${{ inputs.update-ref }}
+
       - name: Set up driver tools only
         uses: ./.github/actions/setup-pm
         with:

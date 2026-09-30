@@ -1,0 +1,45 @@
+name: Fetch upstream release tags
+description: Fetch canonical release tags into forked install/update E2E checkouts.
+inputs:
+  fetch-all:
+    description: Fetch every release tag for the tag-picker job.
+    required: false
+    default: 'false'
+  install-ref:
+    description: Optional starting release tag for one E2E leg.
+    required: false
+    default: ''
+  update-ref:
+    description: Optional target release tag for one E2E leg.
+    required: false
+    default: ''
+runs:
+  using: composite
+  steps:
+    - name: Fetch canonical release refs for forks
+      shell: bash
+      env:
+        FETCH_ALL: ${{ inputs.fetch-all }}
+        INSTALL_REF: ${{ inputs.install-ref }}
+        UPDATE_REF: ${{ inputs.update-ref }}
+      run: |
+        set -euo pipefail
+        if [[ "$GITHUB_REPOSITORY" == 'NousResearch/hermes-agent' ]]; then
+          exit 0
+        fi
+        if [[ "$FETCH_ALL" == 'true' ]]; then
+          git fetch --no-tags --filter=blob:none \
+            https://github.com/NousResearch/hermes-agent.git \
+            '+refs/tags/v*:refs/tags/v*'
+          exit 0
+        fi
+        refspecs=()
+        for ref in "$INSTALL_REF" "$UPDATE_REF"; do
+          if [[ "$ref" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            refspecs+=("+refs/tags/$ref:refs/tags/$ref")
+          fi
+        done
+        if ((${#refspecs[@]})); then
+          git fetch --no-tags --filter=blob:none \
+            https://github.com/NousResearch/hermes-agent.git "${refspecs[@]}"
+        fi
