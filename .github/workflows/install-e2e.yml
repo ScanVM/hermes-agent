@@ -185,6 +185,12 @@ jobs:
             scripts/sandbox/pick-release-tags.sh
             scripts/releases/pick_tags.py
           sparse-checkout-cone-mode: false
+      # Forks don't carry the upstream release tags used as upgrade baselines.
+      - name: Fetch upstream release tags
+        run: |
+          git fetch --no-tags --filter=blob:none \
+            https://github.com/NousResearch/hermes-agent.git \
+            '+refs/tags/v*:refs/tags/v*'
       - id: pick
         env:
           # Inputs never touch shell syntax directly: TAG_COUNT arrives via
